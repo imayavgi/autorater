@@ -7,44 +7,19 @@ import (
 	"log"
 	"os"
 	"strings"
+
+	"github.com/imayavgi/autorater/internal/pkg/models"
 )
 
-type vehicle interface {
-}
-
-type car struct {
-	model       string
-	make        string
-	typeVehicle string
-}
-
-type truck struct {
-	model       string
-	make        string
-	typeVehicle string
-}
-
-type bike struct {
-	model string
-	make  string
-}
-
-// Values array for the feedback.json file
+// Values ...
 type Values struct {
 	Models []Model `json:"values"`
 }
 
-// Model array for the feedback.json file
+// Model ...
 type Model struct {
 	Name     string   `json:"model"`
 	Feedback []string `json:"feedback"`
-}
-
-type feedbackResult struct {
-	feedbackTotal    int
-	feedbackPositive int
-	feedbackNegative int
-	feedbackNeutral  int
 }
 
 type rating float32
@@ -57,25 +32,22 @@ const (
 	extraNegative rating = -1.2
 )
 
-var vehicleResult map[string]feedbackResult
-var inventory []vehicle
+var inventory []models.Vehicle
 
 func init() {
 
-	inventory = []vehicle{
-		bike{"FTR 1200", "Indian"},
-		bike{"Iron 1200", "Harley"},
-		car{"Sonata", "Hyundai", "Sedan"},
-		car{"SantaFe", "Hyundai", "SUV"},
-		car{"Civic", "Honda", "Hatchback"},
-		car{"A5", "Audi", "Coupe"},
-		car{"Mazda6", "Mazda", "Sedan"},
-		car{"CRV", "Honda", "SUV"},
-		car{"Camry", "Toyota", "Sedan"},
-		truck{"F-150", "Ford", "Truck"},
-		truck{"RAM1500", "Dodge", "Truck"}}
-
-	vehicleResult = make(map[string]feedbackResult)
+	inventory = []models.Vehicle{
+		models.Bike{Model: "FTR 1200", Make: "Indian"},
+		models.Bike{Model: "Iron 1200", Make: "Harley"},
+		models.Car{Model: "Sonata", Make: "Hyundai", Type: "Sedan"},
+		models.Car{Model: "SantaFe", Make: "Hyundai", Type: "SUV"},
+		models.Car{Model: "Civic", Make: "Honda", Type: "Hatchback"},
+		models.Car{Model: "A5", Make: "Audi", Type: "Coupe"},
+		models.Car{Model: "Mazda6", Make: "Mazda", Type: "Sedan"},
+		models.Car{Model: "CRV", Make: "Honda", Type: "SUV"},
+		models.Car{Model: "Camry", Make: "Toyota", Type: "Sedan"},
+		models.Truck{Model: "F-150", Make: "Ford", Type: "Truck"},
+		models.Truck{Model: "RAM1500", Make: "Dodge", Type: "Truck"}}
 
 }
 
@@ -87,12 +59,12 @@ func main() {
 	// Print ratings for the different vehicles
 	for _, veh := range inventory {
 		switch v := veh.(type) {
-		case car:
-			v.carDetails()
-		case bike:
-			v.bikeDetails()
-		case truck:
-			v.truckDetails()
+		case models.Car:
+			v.CarDetails()
+		case models.Bike:
+			v.BikeDetails()
+		case models.Truck:
+			v.TruckDetails()
 		default:
 			fmt.Printf("Are you sure this Vehicle Type exists")
 		}
@@ -100,10 +72,16 @@ func main() {
 }
 
 func readJSONFile() Values {
-	jsonFile, err := os.Open("feedback.json")
+	path, err := os.Getwd()
+	if err != nil {
+		log.Println(err)
+	}
+
+	jsonFile, err := os.Open(path + "/test/data/feedback.json")
 
 	if err != nil {
-		log.Fatal("File not found")
+		log.Fatal(err)
+		//log.Fatal("File not found")
 	}
 
 	defer jsonFile.Close()
@@ -118,13 +96,13 @@ func readJSONFile() Values {
 func generateRating() {
 	f := readJSONFile()
 	for _, v := range f.Models {
-		var vehResult feedbackResult
+		var vehResult models.FeedbackResult
 		var vehRating rating
 
 		for _, msg := range v.Feedback {
 			if text := strings.Split(msg, ""); len(text) >= 5 {
 				vehRating = 5.0
-				vehResult.feedbackTotal++
+				vehResult.FeedbackTotal++
 
 				for _, word := range text {
 					switch s := strings.Trim(strings.ToLower(word), " ,.,!,?,\t,\n,\r"); s {
@@ -141,44 +119,14 @@ func generateRating() {
 
 				switch {
 				case vehRating > 8.0:
-					vehResult.feedbackPositive++
+					vehResult.FeedbackPositive++
 				case vehRating >= 4.0 && vehRating <= 8.0:
-					vehResult.feedbackNeutral++
+					vehResult.FeedbackNeutral++
 				case vehRating < 4.0:
-					vehResult.feedbackNegative++
+					vehResult.FeedbackNegative++
 				}
 			}
 		}
-		vehicleResult[v.Name] = vehResult
+		models.VehicleResult[v.Name] = vehResult
 	}
-}
-
-func showRating(model string) {
-	ratingFound := false
-
-	for m, r := range vehicleResult {
-		if m == model {
-			fmt.Printf("Total Ratings:%v\tPositive:%v\tNegative:%v\tNeutral:%v", r.feedbackTotal, r.feedbackPositive, r.feedbackNegative, r.feedbackNeutral)
-			ratingFound = true
-		}
-	}
-
-	if !ratingFound {
-		fmt.Printf("No rating for this vehicle")
-	}
-}
-
-func (c *car) carDetails() {
-	fmt.Printf("\n%-5v: %-8v: %-12v ", "Car", c.make, c.model)
-	showRating(c.model)
-}
-
-func (b *bike) bikeDetails() {
-	fmt.Printf("\n%-5v: %-8v: %-12v ", "Bike", b.make, b.model)
-	showRating(b.model)
-}
-
-func (t *truck) truckDetails() {
-	fmt.Printf("\n%-5v: %-8v: %-12v ", "Truck", t.make, t.model)
-	showRating(t.model)
 }

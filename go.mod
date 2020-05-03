@@ -1,3 +1,3 @@
-module github.com/imayavgi/personal-budget/autorater
+module github.com/imayavgi/autorater
 
 go 1.14
