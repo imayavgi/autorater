@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"os"
 
 	"github.com/imayavgi/autorater/internal/pkg/feedback"
 	"github.com/imayavgi/autorater/internal/pkg/models"
@@ -28,8 +30,13 @@ func init() {
 
 func main() {
 
+	path, err := os.Getwd()
+	if err != nil {
+		log.Println(err)
+	}
+
 	// Generate ratings for the different vehicles
-	report := feedback.ProcessRatingFeed()
+	report := feedback.ProcessRatingFeed(path + "/test/data/feedback.json")
 
 	// Print ratings for the different vehicles
 	for _, veh := range inventory {

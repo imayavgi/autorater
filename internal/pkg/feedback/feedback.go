@@ -40,13 +40,9 @@ const (
 	extraNegative rating = -1.2
 )
 
-func readJSONFile() Values {
-	path, err := os.Getwd()
-	if err != nil {
-		log.Println(err)
-	}
+func readJSONFile(feedFilePath string) Values {
 
-	jsonFile, err := os.Open(path + "/test/data/feedback.json")
+	jsonFile, err := os.Open(feedFilePath)
 
 	if err != nil {
 		log.Fatal(err)
@@ -63,8 +59,8 @@ func readJSONFile() Values {
 }
 
 // ProcessRatingFeed ...
-func ProcessRatingFeed() Report {
-	f := readJSONFile()
+func ProcessRatingFeed(feedFilePath string) Report {
+	f := readJSONFile(feedFilePath)
 	report := make(Report)
 	for _, v := range f.Models {
 		var vehResult Result
