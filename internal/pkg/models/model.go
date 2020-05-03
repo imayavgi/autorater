@@ -1,6 +1,10 @@
 package models
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/imayavgi/autorater/internal/pkg/feedback"
+)
 
 //Vehicle ...
 type Vehicle interface {
@@ -27,38 +31,27 @@ type Bike struct {
 }
 
 //CarDetails ...
-func (c *Car) CarDetails() {
+func (c *Car) CarDetails(report feedback.Report) {
 	fmt.Printf("\n%-5v: %-8v: %-12v ", "Car", c.Make, c.Model)
-	showRating(c.Model)
+	showRating(c.Model, report)
 }
 
 //BikeDetails ...
-func (b *Bike) BikeDetails() {
+func (b *Bike) BikeDetails(report feedback.Report) {
 	fmt.Printf("\n%-5v: %-8v: %-12v ", "Bike", b.Make, b.Model)
-	showRating(b.Model)
+	showRating(b.Model, report)
 }
 
 //TruckDetails ...
-func (t *Truck) TruckDetails() {
+func (t *Truck) TruckDetails(report feedback.Report) {
 	fmt.Printf("\n%-5v: %-8v: %-12v ", "Truck", t.Make, t.Model)
-	showRating(t.Model)
+	showRating(t.Model, report)
 }
 
-// FeedbackResult ...
-type FeedbackResult struct {
-	FeedbackTotal    int
-	FeedbackPositive int
-	FeedbackNegative int
-	FeedbackNeutral  int
-}
-
-// VehicleResult ...
-var VehicleResult map[string]FeedbackResult = make(map[string]FeedbackResult)
-
-func showRating(model string) {
+func showRating(model string, report feedback.Report) {
 	ratingFound := false
 
-	for m, r := range VehicleResult {
+	for m, r := range report {
 		if m == model {
 			fmt.Printf("Total Ratings:%v\tPositive:%v\tNegative:%v\tNeutral:%v", r.FeedbackTotal, r.FeedbackPositive, r.FeedbackNegative, r.FeedbackNeutral)
 			ratingFound = true
