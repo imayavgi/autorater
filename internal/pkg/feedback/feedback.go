@@ -2,6 +2,7 @@ package feedback
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -18,6 +19,26 @@ type Result struct {
 
 // Report ...
 type Report map[string]Result
+
+func (report Report) storeResult(model string, result Result) {
+	report[model] = result
+}
+
+// ShowRating ...
+func (report Report) ShowRating(model string) {
+	ratingFound := false
+
+	for m, r := range report {
+		if m == model {
+			fmt.Printf("Total Ratings:%v\tPositive:%v\tNegative:%v\tNeutral:%v", r.FeedbackTotal, r.FeedbackPositive, r.FeedbackNegative, r.FeedbackNeutral)
+			ratingFound = true
+		}
+	}
+
+	if !ratingFound {
+		fmt.Printf("No rating for this vehicle")
+	}
+}
 
 // Values ...
 type Values struct {
@@ -94,7 +115,8 @@ func ProcessRatingFeed(feedFilePath string) Report {
 				}
 			}
 		}
-		report[v.Name] = vehResult
+		report.storeResult(v.Name, vehResult)
+		//report[v.Name] = vehResult
 	}
 
 	return report
