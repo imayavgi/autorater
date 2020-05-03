@@ -1,3 +1,3 @@
-module vehicle-rating
+module github.com/imayavgi/personal-budget/autorater
 
-go 1.13
+go 1.14
